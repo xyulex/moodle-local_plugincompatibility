@@ -67,52 +67,54 @@ if (has_capability('moodle/site:config', context_system::instance())) {// Get cu
 
     $data = get_installed_plugins($destinationversion);
 
-    if ($data) {
-        $cleaned_data = array();
+    $cleaned_data = array();
 
-        if ($dataformat) {
-            $fields = array(
-                    'plugin' => get_string('plugin'),
-                    'compatibility' => get_string('compatible', 'local_plugincompatibility')
+    if ($dataformat) {
+        $fields = array(
+                'plugin' => get_string('plugin'),
+                'compatibility' => get_string('compatible', 'local_plugincompatibility')
+        );
+
+        foreach ($data as $d) {
+            $cleaned_data[] = array(
+                    $d[0],
+                    strip_tags($d[1])
             );
+        };
 
-            foreach ($data as $d) {
-                $cleaned_data[] = array(
-                        $d[0],
-                        strip_tags($d[1])
-                );
-            };
-
-            $filename = clean_filename('compatibility');
-            download_as_dataformat($filename, $dataformat, $fields, $cleaned_data);
-            exit;
-        }
-
-        echo $OUTPUT->header();
-
-        if (empty($data)) { // No plugins installed, just this one.
-            echo($OUTPUT->notification(get_string('noinstalledplugins', 'local_plugincompatibility'),
-                    \core\output\notification::NOTIFY_WARNING));
-            return false;
-        }
-
-        $output = $OUTPUT->box_start();
-        $output .= html_writer::tag('div', get_string('adminhelpenvironment'));
-        $select = new single_select(new moodle_url('/local/plugincompatibility/index.php'), 'version', $versions, $version, null);
-        $select->label = get_string('moodleversion');
-        $output .= $OUTPUT->render($select);
-        $output .= $OUTPUT->box_end();
-        echo $output;
-
-        $table = new html_table();
-        $table->head = array(mb_strtoupper(get_string('name')),
-                mb_strtoupper(get_string('isitcompatible', 'local_plugincompatibility')));
-        $table->size = array('50%', '50%');
-        $table->align = array('center', 'center');
-        $table->data = $data;
-
-        echo html_writer::table($table);
-        echo $OUTPUT->download_dataformat_selector(get_string('downloadtable', 'local_plugincompatibility'), null);
-        echo $OUTPUT->footer();
+        $filename = clean_filename('compatibility');
+        download_as_dataformat($filename, $dataformat, $fields, $cleaned_data);
+        exit;
     }
+
+    echo $OUTPUT->header();
+
+    if (empty($data)) { // No plugins installed, just this one.
+        echo($OUTPUT->notification(get_string('noinstalledplugins', 'local_plugincompatibility'),
+                \core\output\notification::NOTIFY_WARNING));
+        echo $OUTPUT->footer();
+        return false;
+    }
+
+    $output = $OUTPUT->box_start();
+    $output .= html_writer::tag('div', get_string('adminhelpenvironment'));
+    $select = new single_select(new moodle_url('/local/plugincompatibility/index.php'), 'version', $versions, $version, null);
+    $select->label = get_string('moodleversion');
+    $output .= $OUTPUT->render($select);
+    $output .= $OUTPUT->box_end();
+    echo $output;
+
+    $table = new html_table();
+    $table->head = array(mb_strtoupper(get_string('name')),
+            mb_strtoupper(get_string('dependson', 'local_plugincompatibility')),
+            mb_strtoupper(get_string('isitcompatible', 'local_plugincompatibility'))
+            )    ;
+    $table->size = array('33%', '33%', '33%');
+    $table->align = array('center', 'center', 'center');
+    $table->data = $data;
+
+    echo html_writer::table($table);
+    echo $OUTPUT->download_dataformat_selector(get_string('downloadtable', 'local_plugincompatibility'), null);
+    echo $OUTPUT->footer();
+
 }

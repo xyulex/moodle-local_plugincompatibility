@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['compatible'] = 'Compatible';
+$string['dependson'] = 'Dependencies ';
 $string['downloadtable'] = 'Download format ';
 $string['isitcompatible'] = 'Is it compatible with new version?';
 $string['noinstalledplugins'] = 'No external plugins installed';
