@@ -24,43 +24,30 @@ defined('MOODLE_INTERNAL') || die();
 
 function get_installed_plugins($destinationversion) {
     $data = array();
+
     $pluginman = core_plugin_manager::instance();
     $plugininfo = $pluginman->get_plugins();
 
-    $contribs = array();
     foreach ($plugininfo as $plugintype => $pluginnames) {
-
         foreach ($pluginnames as $pluginname => $pluginfo) {
+            $dependencies = '-';
             if (!$pluginfo->is_standard() && !$pluginfo->is_subplugin()) {
+                if ($pluginname !== 'plugincompatibility') {
+                    $pluginnameformatted = $plugintype . '_' . $pluginname;
 
-                if ($pluginfo->dependencies) {
-                    foreach ($pluginfo->dependencies as $kd => $kv) {
-                        $contribs[$plugintype][$pluginname]['dependencies'][] = $kd;
-
+                    if ($pluginfo->dependencies) {
+                        $dependencies = '';
+                        foreach ($pluginfo->dependencies as $kd => $kv) {
+                            $dependencies .= $kd;
+                        }
                     }
+                    $compatible = check_compatible_version($destinationversion, $pluginnameformatted);
+                    $data[] = array($pluginnameformatted, $dependencies, $compatible);
                 }
-
             }
         }
     }
 
-    foreach ($contribs as $key => $value) {
-        foreach ($value as $item) {
-            if ($item !== 'plugincompatibility') {
-                if ($item['dependencies']) {
-                    $dependencies = '';
-                    foreach ($item['dependencies'] as $d) {
-                        $dependencies .= $d;
-                    }
-                }
-
-                $pluginname = $key . "_" . key($value);
-                $compatible = check_compatible_version($destinationversion, $pluginname);
-                $data[] = array($pluginname, $dependencies, $compatible);
-
-            }
-        }
-    }
     return $data;
 }
 
